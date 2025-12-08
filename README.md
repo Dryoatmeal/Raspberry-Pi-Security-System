@@ -4,8 +4,6 @@ A real-time human-detection security system designed for a Raspberry Pi.
 The application uses a camera feed, performs person detection with a YOLOv8 model from the Ultralytics framework, and sends alerts through a Discord Webhook.  
 All major events are logged for later review.
 
-This project was originally developed for a senior Computer Engineering course and later refactored into a clean, fully documented, deployable system suitable for portfolio and production use.
-
 ---
 
 ## Features
