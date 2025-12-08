@@ -32,7 +32,7 @@ def load_config(config_path: str | Path) -> dict:
     if not config_path.exists():
         raise RuntimeError(
             f"Config file not found at {config_path}. "
-            "Copy config.json to config.json and fill in your values."
+            "Rename config.example.json to config.json and fill in your values."
         )
 
     with open(config_path, "r", encoding="utf-8") as f:
