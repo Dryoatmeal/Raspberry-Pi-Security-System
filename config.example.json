@@ -1,0 +1,10 @@
+{
+  "webhook_url": "https://discord.com/api/webhooks/PUT_YOUR_WEBHOOK_HERE",
+  "log_file": "human_detection.log",
+  "password": "changeme",
+  "camera_index": 0,
+  "target_fps": 15,
+  "conf_threshold": 0.65,
+  "imgsz": 224,
+  "model_name": "yolov8n.pt"
+}
