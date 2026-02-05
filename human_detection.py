@@ -10,14 +10,10 @@ import requests
 import cv2
 from ultralytics import YOLO
 
-# ---------------------------------------------------------------------------
 # Configuration loading
-# ---------------------------------------------------------------------------
-
 def load_config(config_path: str | Path) -> dict:
     """
     Load configuration from a JSON file.
-
     Expected keys:
       - webhook_url: Discord webhook URL for alerts.
       - log_file: Absolute or relative path to a log file.
@@ -54,14 +50,10 @@ IMGSZ: int = int(CONFIG.get("imgsz", 224))
 MODEL_NAME: str = CONFIG.get("model_name", "yolov8n.pt")
 
 
-# ---------------------------------------------------------------------------
 # Logging & notifications
-# ---------------------------------------------------------------------------
-
 def log_event(message: str) -> None:
     """
     Append a timestamped message to the log file.
-
     If the log file cannot be written, the error is printed to stdout.
     """
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -75,7 +67,6 @@ def log_event(message: str) -> None:
 def send_webhook_message(message: str) -> None:
     """
     Send a text message to the configured Discord webhook.
-
     This is used for alerts such as 'human detected' or 'area clear'.
     """
     if not WEBHOOK_URL:
@@ -90,23 +81,18 @@ def send_webhook_message(message: str) -> None:
         log_event(f"Webhook error: {e}")
 
 
-# ---------------------------------------------------------------------------
 # Camera wrapper (threaded)
-# ---------------------------------------------------------------------------
-
 class ThreadedCamera:
     """
     Simple threaded camera reader using OpenCV.
-
     A background thread continuously reads frames from the camera and stores
     them in a deque. The main loop calls `read()` to get the latest frame
     without blocking on I/O.
-
     This helps keep the detection loop responsive.
     """
 
     def __init__(self, src: int = 0, queue_size: int = 2) -> None:
-        # On Raspberry Pi, we typically use /dev/video0; src is kept for clarity.
+        # On Raspberry Pi, it typically uses /dev/video0; src is kept for clarity.
         self.cap = cv2.VideoCapture("/dev/video0", cv2.CAP_V4L2)
         if not self.cap.isOpened():
             raise RuntimeError(f"Unable to open camera index {src}")
@@ -145,7 +131,6 @@ class ThreadedCamera:
     def read(self):
         """
         Return the latest frame available.
-
         If the queue is empty, this falls back to a direct read from the camera.
         """
         with self.lock:
@@ -167,10 +152,7 @@ class ThreadedCamera:
         self.cap.release()
 
 
-# ---------------------------------------------------------------------------
 # Drawing utilities
-# ---------------------------------------------------------------------------
-
 def draw_detections(frame, boxes: List[Tuple[float, float, float, float]]) -> None:
     """
     Draw bounding boxes for detected humans on the frame.
@@ -180,10 +162,7 @@ def draw_detections(frame, boxes: List[Tuple[float, float, float, float]]) -> No
         cv2.rectangle(frame, (x1_i, y1_i), (x2_i, y2_i), (0, 255, 0), 2)
 
 
-# ---------------------------------------------------------------------------
 # Main detection loop
-# ---------------------------------------------------------------------------
-
 def main(
     camera_index: int = CAMERA_INDEX,
     target_fps: float = TARGET_FPS,
@@ -193,7 +172,6 @@ def main(
 ) -> None:
     """
     Run the human detection loop.
-
     - Loads a YOLOv8 model.
     - Reads frames from a threaded camera.
     - Detects persons every N frames.
@@ -239,9 +217,7 @@ def main(
             frame = cam.read()
             frame_counter += 1
 
-            # --------------------------------------------------------------
             # Keyboard handling (OpenCV window must be focused)
-            # --------------------------------------------------------------
             key = cv2.waitKey(1) & 0xFF
 
             if key != 255:  # any key pressed
@@ -260,9 +236,7 @@ def main(
                 # Clean exit on 'q'
                 break
 
-            # --------------------------------------------------------------
             # Run YOLO inference periodically
-            # --------------------------------------------------------------
             if frame_counter % detect_every == 0:
                 results = model.predict(
                     source=frame,
@@ -289,9 +263,7 @@ def main(
 
             human_count = len(last_boxes)
 
-            # --------------------------------------------------------------
             # Status text overlays
-            # --------------------------------------------------------------
             status_text = "DETECTION ENABLED" if detection_enabled else "DETECTION DISABLED"
             status_color = (0, 255, 0) if detection_enabled else (0, 0, 255)
 
@@ -315,9 +287,7 @@ def main(
                 2,
             )
 
-            # --------------------------------------------------------------
             # Skip detection logic entirely if disabled
-            # --------------------------------------------------------------
             if not detection_enabled:
                 cv2.putText(
                     frame,
@@ -336,9 +306,7 @@ def main(
                     time.sleep(sleep_for)
                 continue
 
-            # --------------------------------------------------------------
             # Human presence logic (trigger & clear)
-            # --------------------------------------------------------------
             if human_count > 0:
                 # Reset "no human" timer whenever at least one human is detected
                 no_human_timer = 0.0
@@ -354,14 +322,14 @@ def main(
                         countdown = 0.00
                         triggered = True
                         last_repeat_notification = time.time()
-                        send_webhook_message("🚨 **Human detected for 3 seconds!**")
+                        send_webhook_message("**Human detected for 3 seconds!**")
                         log_event("Human detected for 3 seconds.")
 
                 # While triggered, keep sending periodic updates
                 if triggered:
                     if time.time() - last_repeat_notification >= 10:
                         send_webhook_message(
-                            "🔔 Human still detected (10-second update)."
+                            "Human still detected (10-second update)."
                         )
                         log_event("Human still detected (10-second update).")
                         last_repeat_notification = time.time()
@@ -377,7 +345,7 @@ def main(
                         counting_active = False
                         flash_state = False
                         send_webhook_message(
-                            "✅ **No humans detected for 3 seconds. Area clear.**"
+                            "**No humans detected for 3 seconds. Area clear.**"
                         )
                         log_event("Area clear after 3 seconds of no detection.")
                         no_human_timer = 0.0
@@ -393,9 +361,7 @@ def main(
                 2,
             )
 
-            # --------------------------------------------------------------
             # Flash overlay when triggered
-            # --------------------------------------------------------------
             if triggered:
                 if time.time() - flash_last_time >= 0.5:
                     flash_state = not flash_state
