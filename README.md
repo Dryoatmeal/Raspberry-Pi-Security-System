@@ -63,7 +63,7 @@ All major events are logged for later review.
 4. **Run the system**
 
    ```bash
-   python3 human_detection.py
+   python3 main.py
    ```
 
 Controls:
