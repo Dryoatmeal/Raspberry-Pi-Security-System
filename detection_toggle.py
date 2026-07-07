@@ -23,5 +23,5 @@ class DetectionToggle:
                 self.enabled = not self.enabled
                 state = "ENABLED" if self.enabled else "DISABLED"
                 self.logger.log(f"Detection toggled: {state}")
-                self.notifier.send(f"🔒 Detection {state}")
+                self.notifier.send(f"Detection {state}")
             self.key_buffer.clear()

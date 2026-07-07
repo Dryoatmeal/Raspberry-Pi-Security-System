@@ -13,7 +13,7 @@ class ThreadedCamera:
     """
 
     def __init__(self, src=0, queue_size=2):
-        # On Raspberry Pi this is normally /dev/video0; src is kept around for clarity.
+        # On Raspberry Pi this is normally /dev/video0.
         system = platform.system()
 
         self.cap = None

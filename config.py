@@ -28,6 +28,6 @@ def load_config(config_path):
 
 
 def get_config_path():
-    """Path to config.json, or the HD_CONFIG env var if it's set."""
+    """Path to config.json."""
     default_path = Path(__file__).with_name("config.json")
     return os.getenv("HD_CONFIG", default_path)
